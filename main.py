@@ -1,10 +1,23 @@
 # main.py
 import pandas as pd
 from querys import validar_puestos_en_db
+from responsables import responsables
 
 def exportar_tabla_personal(df, nombre_archivo):
     """Exporta el DataFrame de personal a un archivo Excel."""
     df.to_excel(nombre_archivo, index=False)
+
+# Construir mapas de puesto -> ID responsable y puesto -> AREA_ID
+def construir_mapas_responsables(responsables):
+    mapa_id_res = {}
+    mapa_area_id = {}
+    for item in responsables:
+        for nombre, datos in item.items():
+            for puesto in datos['PUESTOS']:
+                key = puesto['NOMBRE'].strip().upper()
+                mapa_id_res[key] = datos['ID']
+                mapa_area_id[key] = puesto.get('AREA_ID', '')
+    return mapa_id_res, mapa_area_id
 
 # Cargar archivo Excel
 archivo_excel = "PersonalNuevoIngreso.xlsx"
@@ -33,16 +46,22 @@ map_funciones = dict(zip(puestos_encontrados['PUESTO'], puestos_encontrados['id_
 df_excel['PUESTO_NORMALIZADO'] = df_excel['PUESTO'].str.strip().str.upper()
 df_excel['id_funcion'] = df_excel['PUESTO_NORMALIZADO'].map(map_funciones)
 
+# Crear diccionarios de responsables por puesto
+mapa_responsables, mapa_area_ids = construir_mapas_responsables(responsables)
+
 # Construir tabla base
 df_final = df_excel[[
     'id_empleado', 'id_funcion', 'id_area', 'app', 'apm', 'nombre', 'activo', 'pass'
-]]
+]].copy()
 
-# Agregar columnas adicionales con valores por defecto o extraídos del Excel
-df_final['id_area_res'] = ''
+# Agregar columnas adicionales
+
+# id_area_res -> ID del responsable según puesto
+# id_areat     -> AREA_ID del responsable según puesto
+df_final['id_area_res'] = df_excel['PUESTO_NORMALIZADO'].map(mapa_responsables).fillna('')
 df_final['tc'] = 1
 df_final['mail'] = df_excel['E-MAIL'].str.strip()
-df_final['id_areat'] = ''
+df_final['id_areat'] = df_excel['PUESTO_NORMALIZADO'].map(mapa_area_ids).fillna('')
 df_final['id_area_res2'] = 5
 df_final['id_area_res3'] = ''
 df_final['perm_fsm'] = 0
