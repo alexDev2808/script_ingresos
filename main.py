@@ -2,6 +2,10 @@
 import pandas as pd
 from querys import validar_puestos_en_db
 
+def exportar_tabla_personal(df, nombre_archivo):
+    """Exporta el DataFrame de personal a un archivo Excel."""
+    df.to_excel(nombre_archivo, index=False)
+
 # Cargar archivo Excel
 archivo_excel = "PersonalNuevoIngreso.xlsx"
 df_excel = pd.read_excel(archivo_excel)
@@ -29,14 +33,33 @@ map_funciones = dict(zip(puestos_encontrados['PUESTO'], puestos_encontrados['id_
 df_excel['PUESTO_NORMALIZADO'] = df_excel['PUESTO'].str.strip().str.upper()
 df_excel['id_funcion'] = df_excel['PUESTO_NORMALIZADO'].map(map_funciones)
 
-# Construir tabla final con los campos solicitados
+# Construir tabla base
 df_final = df_excel[[
     'id_empleado', 'id_funcion', 'id_area', 'app', 'apm', 'nombre', 'activo', 'pass'
+]]
+
+# Agregar columnas adicionales con valores por defecto o extraídos del Excel
+df_final['id_area_res'] = ''
+df_final['tc'] = 1
+df_final['mail'] = df_excel['E-MAIL'].str.strip()
+df_final['id_areat'] = ''
+df_final['id_area_res2'] = 5
+df_final['id_area_res3'] = ''
+df_final['perm_fsm'] = 0
+df_final['tipoPuesto'] = 3
+
+# Reorganizar columnas finales
+df_final = df_final[[
+    'id_empleado', 'id_funcion', 'id_area', 'app', 'apm', 'nombre', 'activo', 'pass',
+    'id_area_res', 'tc', 'mail', 'id_areat', 'id_area_res2', 'id_area_res3', 'perm_fsm', 'tipoPuesto'
 ]]
 
 # Mostrar resultados finales
 print("\n✅ Tabla final para inserción en la base de datos:")
 print(df_final)
+
+# Guardar tabla final en Excel
+exportar_tabla_personal(df_final, "tabla_personal_final.xlsx")
 
 # Mostrar puestos no encontrados (opcional)
 print("\n❌ Puestos no encontrados en la base de datos:")
