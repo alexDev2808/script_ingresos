@@ -7,6 +7,7 @@ from responsables import responsables
 from main import construir_mapas_responsables, exportar_tabla_personal
 import os
 from datetime import datetime
+import threading
 
 def iniciar_interfaz():
     def seleccionar_archivo():
@@ -76,6 +77,7 @@ def iniciar_interfaz():
 
             if os.path.isfile(ruta_archivo):
                 messagebox.showinfo("Archivo importado", f"✅ El archivo ha sido importado correctamente en la carpeta 'Ingresos':\n{os.path.basename(ruta_archivo)}")
+                root.after(3000, root.destroy)
             else:
                 messagebox.showwarning("Error", "No se encontró el archivo después del guardado.")
 
@@ -84,10 +86,27 @@ def iniciar_interfaz():
 
     root = tk.Tk()
     root.title("Generador de Tabla de Personal")
-    root.geometry("400x200")
+    root.geometry("500x300")
+    root.configure(bg="#f0f4f8")
 
-    boton = tk.Button(root, text="Seleccionar archivo Excel", command=seleccionar_archivo, height=2, width=30)
-    boton.pack(pady=60)
+    titulo = tk.Label(root, text="Gestor de Ingresos de Personal", font=("Helvetica", 16, "bold"), bg="#f0f4f8", fg="#003366")
+    titulo.pack(pady=20)
+
+    boton = tk.Button(
+        root,
+        text="Seleccionar archivo Excel",
+        command=seleccionar_archivo,
+        height=2,
+        width=30,
+        bg="#004080",
+        fg="white",
+        font=("Helvetica", 11, "bold"),
+        activebackground="#0059b3",
+        activeforeground="white",
+        relief="raised",
+        bd=3
+    )
+    boton.pack(pady=30)
 
     root.mainloop()
 
